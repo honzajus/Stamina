@@ -17,7 +17,7 @@ export function ActivityDetail() {
   const [activity, setActivity] = useState<Activity | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentText, setCommentText] = useState("");
-  const [shared, setShared] = useState(false);
+  const [shareState, setShareState] = useState<"idle" | "shared" | "copied" | "failed">("idle");
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
@@ -58,10 +58,9 @@ export function ActivityDetail() {
   async function handleShare() {
     if (!activity) return;
     const result = await shareLink(`${window.location.origin}/share/activities/${activity.id}`, activity.title);
-    if (result === "copied") {
-      setShared(true);
-      setTimeout(() => setShared(false), 2000);
-    }
+    if (result === "cancelled") return;
+    setShareState(result === "shared" ? "shared" : result === "copied" ? "copied" : "failed");
+    setTimeout(() => setShareState("idle"), 2500);
   }
 
   async function handleDelete() {
@@ -143,20 +142,21 @@ export function ActivityDetail() {
 
       {activity.map && (
         <div className="activity-card-map" style={{ margin: 0 }}>
-          <RouteMap points={activity.map.points} height={340} />
+          <RouteMap points={activity.map.points} height={480} />
         </div>
       )}
 
       <div className="activity-card-actions" style={{ margin: 0, border: "none", padding: 0 }}>
-        <button className={`action-pill ${activity.viewerHasGivenStamina ? "is-active" : ""}`} onClick={toggleStamina}>
-          <Icon name="stamina" size={18} style={activity.viewerHasGivenStamina ? { color: "var(--color-primary)" } : undefined} />
+        <button className={`action-pill action-pill-lg ${activity.viewerHasGivenStamina ? "is-active" : ""}`} onClick={toggleStamina}>
+          <Icon name="stamina" size={20} style={activity.viewerHasGivenStamina ? { color: "var(--color-primary)" } : undefined} />
           {activity.staminaCount} Stamina
         </button>
-        <button className="action-pill" onClick={handleShare}>
-          <Icon name="share" size={18} />
-          {shared ? "Link copied" : "Share"}
+        <button className="action-pill action-pill-lg" onClick={handleShare}>
+          <Icon name="share" size={20} />
+          {shareState === "shared" ? "Shared" : shareState === "copied" ? "Link copied" : shareState === "failed" ? "Couldn't share" : "Share"}
         </button>
       </div>
+      {shareState === "failed" && <div className="banner is-error">Couldn't share this link. Try again.</div>}
 
       <div>
         <div className="section-title" style={{ marginBottom: 12 }}>

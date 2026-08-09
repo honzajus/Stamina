@@ -26,7 +26,7 @@ export function ProfileContent({ userId, isSelf }: ProfileContentProps) {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [shareState, setShareState] = useState<"idle" | "copied">("idle");
+  const [shareState, setShareState] = useState<"idle" | "shared" | "copied" | "failed">("idle");
 
   useEffect(() => {
     let cancelled = false;
@@ -57,10 +57,9 @@ export function ProfileContent({ userId, isSelf }: ProfileContentProps) {
 
   async function handleShare() {
     const result = await shareLink(`${window.location.origin}/share/users/${userId}`, `${profile?.user.name} on Stamina`);
-    if (result === "copied") {
-      setShareState("copied");
-      setTimeout(() => setShareState("idle"), 2000);
-    }
+    if (result === "cancelled") return;
+    setShareState(result === "shared" ? "shared" : result === "copied" ? "copied" : "failed");
+    setTimeout(() => setShareState("idle"), 2500);
   }
 
   if (loading || !profile) {
@@ -117,6 +116,7 @@ export function ProfileContent({ userId, isSelf }: ProfileContentProps) {
           </button>
         </div>
         {shareState === "copied" && <div className="banner">Profile link copied</div>}
+        {shareState === "failed" && <div className="banner is-error">Couldn't share this profile. Try again.</div>}
       </div>
 
       {user.locationLat !== null && user.locationLng !== null && (
