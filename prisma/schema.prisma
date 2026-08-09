@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Sport / Visibility / ActivityStatus are plain strings rather than native
+// Postgres enums; the allowed values are enforced by zod at the API boundary
+// (see src/modules/*/*.schemas.ts).
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  bio          String?
+  avatarUrl    String?
+  location     String?
+  locationLat  Float?
+  locationLng  Float?
+  sports       String   @default("[]") // JSON-encoded array of Sport
+  visibility   String   @default("EVERYONE") // default privacy for new activities
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  activities Activity[]
+  comments   Comment[]
+  staminas   Stamina[]
+
+  followedBy Follow[] @relation("following")
+  following  Follow[] @relation("follower")
+
+  @@map("users")
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@map("follows")
+}
+
+model Activity {
+  id             String    @id @default(cuid())
+  userId         String
+  sport          String // RUNNING | CYCLING | WALKING | HIKING | SWIMMING | TRAINING
+  title          String
+  status         String    @default("ACTIVE") // ACTIVE | PAUSED | FINISHED
+  visibility     String    @default("EVERYONE") // EVERYONE | FOLLOWERS | ONLY_ME
+  startTime      DateTime  @default(now())
+  endTime        DateTime?
+  duration       Int       @default(0) // moving time in seconds
+  distance       Float     @default(0) // meters
+  pace           Float? // seconds per km
+  avgSpeed       Float? // meters per second
+  elevationGain  Float     @default(0) // meters
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  points   GpsPoint[]
+  staminas Stamina[]
+  comments Comment[]
+
+  @@map("activities")
+}
+
+model GpsPoint {
+  id         String   @id @default(cuid())
+  activityId String
+  sequence   Int
+  latitude   Float
+  longitude  Float
+  altitude   Float?
+  speed      Float?
+  timestamp  DateTime @default(now())
+
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@unique([activityId, sequence])
+  @@index([activityId])
+  @@map("gps_points")
+}
+
+model Stamina {
+  id         String   @id @default(cuid())
+  userId     String
+  activityId String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, activityId])
+  @@map("staminas")
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  userId     String
+  activityId String
+  text       String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}

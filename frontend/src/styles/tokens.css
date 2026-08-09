@@ -1,0 +1,75 @@
+:root {
+  /* Stamina Green is reserved for exactly two things: the route line on a
+     map, and the Record button. Nothing else in the UI uses it. */
+  --color-brand: #16a34a;
+  --color-brand-dark: #166534;
+
+  /* Neutral "primary action" tokens used by buttons, selected states,
+     active nav, links, etc. */
+  --color-primary: #111814;
+  --color-primary-dark: #111814;
+  --color-primary-light: #edefed;
+
+  --color-bg: #fafafa;
+  --color-white: #ffffff;
+  --color-text: #111814;
+  --color-text-secondary: #6b7280;
+  --color-border: #e5e7eb;
+  --color-danger: #dc2626;
+
+  --radius-card: 22px;
+  --radius-button: 16px;
+  --radius-pill: 999px;
+  --radius-avatar: 50%;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  --shadow-card: 0 1px 2px rgba(17, 24, 20, 0.04), 0 8px 24px rgba(17, 24, 20, 0.05);
+  --app-max-width: 480px;
+
+  /* Liquid Glass surfaces */
+  --glass-blur: 22px;
+  --glass-surface: rgba(255, 255, 255, 0.6);
+  --glass-surface-strong: rgba(255, 255, 255, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --glass-highlight: rgba(255, 255, 255, 0.5);
+  --glass-shadow: 0 1px 1px rgba(17, 24, 20, 0.04), 0 12px 32px rgba(17, 24, 20, 0.1);
+  --glass-bg-1: rgba(22, 163, 74, 0.16);
+  --glass-bg-2: rgba(59, 130, 246, 0.12);
+  --glass-bg-3: rgba(236, 72, 153, 0.08);
+}
+
+[data-theme="dark"] {
+  --color-brand: #22c55e;
+  --color-brand-dark: #15803d;
+
+  --color-primary: #f5f5f5;
+  --color-primary-dark: #f5f5f5;
+  --color-primary-light: #2a2a2a;
+
+  --color-bg: #1c1c1c;
+  --color-white: #242424;
+  --color-text: #f5f5f5;
+  --color-text-secondary: #9a9a9a;
+  --color-border: #333333;
+  --color-danger: #f87171;
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+
+  --glass-surface: rgba(36, 36, 36, 0.6);
+  --glass-surface-strong: rgba(28, 28, 28, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-highlight: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 1px 1px rgba(0, 0, 0, 0.3), 0 12px 32px rgba(0, 0, 0, 0.45);
+  --glass-bg-1: rgba(34, 197, 94, 0.16);
+  --glass-bg-2: rgba(59, 130, 246, 0.14);
+  --glass-bg-3: rgba(236, 72, 153, 0.1);
+}
