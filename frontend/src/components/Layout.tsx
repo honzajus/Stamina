@@ -1,4 +1,4 @@
-import { ReactNode, TouchEvent, useRef } from "react";
+import { ReactNode, TouchEvent, useEffect, useRef, useState } from "react";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../lib/auth";
 import { BottomNav } from "./BottomNav";
@@ -11,6 +11,16 @@ export function TabLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const touchStart = useRef<{ x: number; y: number; onMap: boolean } | null>(null);
+  const prevIndex = useRef(SWIPE_TAB_ORDER.indexOf(location.pathname));
+  const [direction, setDirection] = useState<"forward" | "backward">("forward");
+
+  useEffect(() => {
+    const index = SWIPE_TAB_ORDER.indexOf(location.pathname);
+    if (index !== -1 && prevIndex.current !== -1 && index !== prevIndex.current) {
+      setDirection(index > prevIndex.current ? "forward" : "backward");
+    }
+    if (index !== -1) prevIndex.current = index;
+  }, [location.pathname]);
 
   function handleTouchStart(e: TouchEvent) {
     if (e.touches.length !== 1) {
@@ -43,8 +53,14 @@ export function TabLayout() {
 
   return (
     <div className="app-shell">
-      <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-        <Outlet />
+      <div
+        style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", overflowX: "hidden" }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        <div key={location.pathname} className={`tab-page tab-page-${direction}`} style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+          <Outlet />
+        </div>
       </div>
       <BottomNav />
     </div>

@@ -778,3 +778,39 @@ p {
   text-align: center;
   padding: var(--space-6);
 }
+
+.tab-page {
+  animation-duration: 220ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+}
+
+.tab-page-forward {
+  animation-name: tab-slide-in-forward;
+}
+
+.tab-page-backward {
+  animation-name: tab-slide-in-backward;
+}
+
+@keyframes tab-slide-in-forward {
+  from {
+    transform: translateX(28px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes tab-slide-in-backward {
+  from {
+    transform: translateX(-28px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

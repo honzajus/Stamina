@@ -48,23 +48,16 @@ happened instead of failing silently.
 The `ios/` folder is a Capacitor-wrapped native shell around this same React
 app — installed on your phone via Xcode, not the App Store.
 
-**How it's wired for development:** `capacitor.config.ts` points the native
-app's webview at your Mac's LAN dev server (`server.url`), not a bundled
-build. That means the app on your phone is live-reloading the same code
-`npm run dev` serves — edit a file, see it update on the phone. It requires:
+**How it's wired now (release mode):** `capacitor.config.ts` has no `server`
+override, so the native shell loads the bundled `dist/` directly — built with
+`VITE_API_URL` pointed at the deployed API (`frontend/.env.production`, baked
+in at build time). The app is fully self-contained: no dependency on your
+Mac being on the same Wi-Fi or running anything.
 
-- Your Mac and phone on the same Wi-Fi network.
-- Both dev servers running: the API (`npm run dev` at the repo root, port
-  4000) and this frontend with `npm run dev -- --host` (so Vite binds the
-  LAN interface, not just localhost).
-- The IP in `capacitor.config.ts`'s `server.url` matching your Mac's current
-  LAN IP (`ipconfig getifaddr en0`) — update it and run `npx cap sync ios`
-  again if your IP changes (e.g. after reconnecting to Wi-Fi).
-
-**To install on your iPhone:**
+**To install on your iPhone (after any code change):**
 
 ```bash
-npm run build && npx cap sync ios   # only needed after native config changes
+npm run build && npx cap sync ios   # bundles dist/ + copies it into the native shell
 npx cap open ios                     # opens Xcode
 ```
 
@@ -74,17 +67,26 @@ simulator) from the device dropdown in the toolbar → press **Run**. First
 launch, the phone will refuse to open it until you go to **Settings → General
 → VPN & Device Management** and trust your developer certificate. With a
 free Apple ID (no paid Developer Program), the install expires after about
-7 days — just re-run from Xcode to renew it.
+7 days — just re-run from Xcode to renew it. Since this is a bundled build,
+**editing frontend code has no effect on the phone until you re-run those two
+commands and re-build in Xcode** — it doesn't live-reload.
 
 **Location permission strings** (`NSLocationWhenInUseUsageDescription` etc.)
-and a dev-only cleartext-HTTP exception (`NSAppTransportSecurity`, since the
-LAN dev server isn't HTTPS) are already set in `ios/App/App/Info.plist`.
+are set in `ios/App/App/Info.plist`.
 
-**For a real release build** (App Store / TestFlight, not live-reload): remove
-the `server` block from `capacitor.config.ts` so the app loads the bundled
-`dist/` instead, set a real `VITE_API_URL` pointing at a deployed API, run
-`npm run build && npx cap sync ios`, drop the ATS exception, and configure
-proper signing — none of that is set up yet.
+**To switch back to live-reload development** (edit code, see it update on
+the phone instantly): add back a `server` block to `capacitor.config.ts`
+pointing at your Mac's LAN dev server —
+
+```ts
+server: { url: "http://<your-mac-LAN-IP>:5173", cleartext: true }
+```
+
+— re-add the ATS cleartext exception to `Info.plist` (`NSAppTransportSecurity`
+→ `NSAllowsArbitraryLoads: true`), run `npm run dev -- --host` here and
+`npm run dev` for the API, then `npx cap sync ios` and re-run from Xcode. Keep
+your Mac and phone on the same Wi-Fi, and update the IP (`ipconfig getifaddr
+en0`) whenever it changes.
 
 ## Out of scope
 
