@@ -1,5 +1,7 @@
 # Stamina
 
+<p align="center"><img src="assets/stamina-logo-banner.png" width="220" alt="Stamina logo" /></p>
+
 **Stamina** is a social fitness app: record an activity with GPS, save it,
 share it with your feed, and track your progress over time.
 
@@ -13,6 +15,13 @@ Live at [www.5maidevs.lol](https://www.5maidevs.lol).
   <img src="assets/screenshots/03-explore-map.png" width="19%" alt="Friends map" />
   <img src="assets/screenshots/04-explore-friends.png" width="19%" alt="Friends list" />
   <img src="assets/screenshots/05-profile.png" width="19%" alt="Profile" />
+</p>
+<p align="center">
+  <img src="assets/screenshots/dark-01-home.png" width="19%" alt="Home feed, dark theme" />
+  <img src="assets/screenshots/dark-02-activity-detail.png" width="19%" alt="Activity detail, dark theme" />
+  <img src="assets/screenshots/dark-03-explore-map.png" width="19%" alt="Friends map, dark theme" />
+  <img src="assets/screenshots/dark-04-explore-friends.png" width="19%" alt="Friends list, dark theme" />
+  <img src="assets/screenshots/dark-05-profile.png" width="19%" alt="Profile, dark theme" />
 </p>
 
 This repository has two parts:

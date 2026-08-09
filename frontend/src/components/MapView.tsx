@@ -19,19 +19,20 @@ const ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">Op
 
 /**
  * The map container's real pixel size isn't settled until after layout has
- * run (fonts, flex reflow, the surrounding card's final height). Fitting
- * bounds declaratively on mount can measure a stale size, so this refits
- * explicitly once the map is ready and again after the container's size
- * stabilizes.
+ * run (fonts, flex reflow, the surrounding card's final height, a card that
+ * only mounts once its data has loaded). Leaflet measures its container once
+ * at creation, so a map that's born at a stale/zero size renders blank tiles
+ * forever until something calls invalidateSize. This always re-measures
+ * (every map, not just ones with bounds to fit) and, when bounds are given,
+ * re-fits to them too — both retried once more after the size settles.
  */
 function FitBounds({ bounds }: { bounds?: LatLngBoundsExpression }) {
   const map = useMap();
 
   useEffect(() => {
-    if (!bounds) return;
     const fit = () => {
       map.invalidateSize();
-      map.fitBounds(bounds, { padding: [24, 24] });
+      if (bounds) map.fitBounds(bounds, { padding: [24, 24] });
     };
     fit();
     const timer = window.setTimeout(fit, 250);
