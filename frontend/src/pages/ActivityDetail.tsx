@@ -164,7 +164,15 @@ export function ActivityDetail() {
         </div>
         <div className="list">
           {comments.map((comment) => (
-            <div className="list-row" key={comment.id}>
+            <div
+              className="list-row"
+              key={comment.id}
+              style={{ cursor: comment.user ? "pointer" : "default" }}
+              onClick={() => {
+                if (!comment.user) return;
+                navigate(user ? `/users/${comment.user.id}` : `/share/users/${comment.user.id}`);
+              }}
+            >
               <Avatar name={comment.user?.name ?? "Athlete"} avatarUrl={comment.user?.avatarUrl} size={36} />
               <div className="list-row-body">
                 <div className="list-row-title">{comment.user?.name}</div>
