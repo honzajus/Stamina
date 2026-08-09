@@ -24,6 +24,7 @@ export function getToken(): string | null {
 export function setToken(token: string | null) {
   if (token) localStorage.setItem(TOKEN_KEY, token);
   else localStorage.removeItem(TOKEN_KEY);
+  clearCache();
 }
 
 export class ApiError extends Error {
@@ -34,7 +35,49 @@ export class ApiError extends Error {
   }
 }
 
+// Short-lived GET cache: swiping between Home/Explore/You remounts each
+// screen, which would otherwise re-fetch the same data over the network
+// every time. A fresh cache hit resolves instantly with no request at all;
+// concurrent requests for the same URL share one in-flight fetch instead of
+// firing duplicates. Any write clears it, so nothing can go stale-looking
+// after an action the user just took.
+const GET_CACHE_TTL_MS = 30_000;
+const getCache = new Map<string, { data: unknown; expires: number }>();
+const inFlight = new Map<string, Promise<unknown>>();
+
+function clearCache() {
+  getCache.clear();
+  inFlight.clear();
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const method = (options.method ?? "GET").toUpperCase();
+
+  if (method !== "GET") {
+    clearCache();
+    return doFetch<T>(path, options);
+  }
+
+  const cached = getCache.get(path);
+  if (cached && cached.expires > Date.now()) {
+    return cached.data as T;
+  }
+
+  const pending = inFlight.get(path);
+  if (pending) return pending as Promise<T>;
+
+  const promise = doFetch<T>(path, options)
+    .then((data) => {
+      getCache.set(path, { data, expires: Date.now() + GET_CACHE_TTL_MS });
+      return data;
+    })
+    .finally(() => inFlight.delete(path));
+
+  inFlight.set(path, promise);
+  return promise;
+}
+
+async function doFetch<T>(path: string, options: RequestInit): Promise<T> {
   const token = getToken();
   const headers: Record<string, string> = {
     ...(options.body ? { "Content-Type": "application/json" } : {}),
