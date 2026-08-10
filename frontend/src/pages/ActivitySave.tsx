@@ -78,6 +78,12 @@ export function ActivitySave() {
           <div className="record-secondary-value">{formatElevation(activity.elevationGain)}</div>
           <div className="record-secondary-label">Elevation</div>
         </div>
+        {activity.stepCount != null && (
+          <div>
+            <div className="record-secondary-value">{activity.stepCount.toLocaleString()}</div>
+            <div className="record-secondary-label">Steps</div>
+          </div>
+        )}
       </div>
 
       <div className="field">

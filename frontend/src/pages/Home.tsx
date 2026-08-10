@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { TopBar } from "../components/TopBar";
 import { StatCard } from "../components/StatCard";
 import { ActivityCard } from "../components/ActivityCard";
+import { NotificationBell } from "../components/NotificationBell";
 import { useAuth } from "../lib/auth";
 import * as api from "../lib/api";
 import type { Activity, ProgressResponse } from "../lib/types";
@@ -38,7 +39,7 @@ export function Home() {
 
   return (
     <div className="screen">
-      <TopBar />
+      <TopBar right={<NotificationBell />} />
       <h1 className="greeting">
         {greeting()}, {user?.name.split(" ")[0]}
       </h1>

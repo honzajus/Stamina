@@ -23,6 +23,11 @@ model User {
   locationLng  Float?
   sports       String   @default("[]") // JSON-encoded array of Sport
   visibility   String   @default("EVERYONE") // default privacy for new activities
+  heightCm     Float? // used to estimate step length/count for walking-style activities
+  weightKg     Float?
+  birthYear    Int?
+  gender       String? // MALE | FEMALE | OTHER | PREFER_NOT_TO_SAY
+  weeklyGoalMeters Float? // optional self-set weekly distance goal, shown as progress on the Progress page
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -32,6 +37,9 @@ model User {
 
   followedBy Follow[] @relation("following")
   following  Follow[] @relation("follower")
+
+  notifications     Notification[] @relation("recipient")
+  triggeredNotifs   Notification[] @relation("actor")
 
   @@map("users")
 }
@@ -63,6 +71,7 @@ model Activity {
   pace           Float? // seconds per km
   avgSpeed       Float? // meters per second
   elevationGain  Float     @default(0) // meters
+  stepCount      Int? // estimated from distance + the user's height, walking-style sports only
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
@@ -115,4 +124,20 @@ model Comment {
   activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
 
   @@map("comments")
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  recipientId String
+  actorId     String
+  type        String // FOLLOW | STAMINA | COMMENT
+  activityId  String?
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  recipient User @relation("recipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  actor     User @relation("actor", fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId, createdAt])
+  @@map("notifications")
 }

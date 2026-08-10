@@ -4,11 +4,11 @@ import { Avatar } from "./Avatar";
 import { ActivityCard } from "./ActivityCard";
 import { LocationMap } from "./LocationMap";
 import { Icon, SPORT_LABEL } from "../lib/icons";
-import { formatDistanceKm, formatElevation } from "../lib/format";
+import { formatDistanceKm, formatDuration, formatElevation, formatPace } from "../lib/format";
 import { shareLink } from "../lib/share";
 import { useAuth } from "../lib/auth";
 import * as api from "../lib/api";
-import type { Activity, PeriodStats, User } from "../lib/types";
+import type { Activity, PeriodStats, User, UserRecords } from "../lib/types";
 
 interface ProfileContentProps {
   userId: string;
@@ -27,6 +27,7 @@ export function ProfileContent({ userId, isSelf }: ProfileContentProps) {
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [shareState, setShareState] = useState<"idle" | "shared" | "copied" | "failed">("idle");
+  const [records, setRecords] = useState<UserRecords | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -44,6 +45,17 @@ export function ProfileContent({ userId, isSelf }: ProfileContentProps) {
       cancelled = true;
     };
   }, [userId]);
+
+  useEffect(() => {
+    if (!isSelf) return;
+    let cancelled = false;
+    api.getMyRecords().then(({ records: r }) => {
+      if (!cancelled) setRecords(r);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isSelf]);
 
   async function toggleFollow() {
     if (!viewer) {
@@ -149,6 +161,38 @@ export function ProfileContent({ userId, isSelf }: ProfileContentProps) {
           </div>
         </div>
       </div>
+
+      {records && (records.currentStreakDays > 0 || records.longestDistanceMeters > 0) && (
+        <div>
+          <div className="section-title" style={{ marginBottom: 12 }}>
+            Records &amp; streaks
+          </div>
+          <div className="stat-grid">
+            <div className="card">
+              <div className="activity-stat-value">{records.currentStreakDays}</div>
+              <div className="activity-stat-label">Day streak</div>
+            </div>
+            <div className="card">
+              <div className="activity-stat-value">{records.longestStreakDays}</div>
+              <div className="activity-stat-label">Best streak</div>
+            </div>
+            <div className="card">
+              <div className="activity-stat-value">{formatDistanceKm(records.longestDistanceMeters)}</div>
+              <div className="activity-stat-label">Longest km</div>
+            </div>
+            <div className="card">
+              <div className="activity-stat-value">{formatDuration(records.longestDurationSeconds)}</div>
+              <div className="activity-stat-label">Longest time</div>
+            </div>
+            {records.bestRunPaceSecondsPerKm !== null && (
+              <div className="card">
+                <div className="activity-stat-value">{formatPace(records.bestRunPaceSecondsPerKm)}</div>
+                <div className="activity-stat-label">Best pace /km</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <div>
         <div className="section-title" style={{ marginBottom: 12 }}>

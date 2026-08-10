@@ -4,6 +4,7 @@ import { TopBar } from "../components/TopBar";
 import { Avatar } from "../components/Avatar";
 import { FriendsMap } from "../components/FriendsMap";
 import { FriendsList } from "../components/FriendsList";
+import { DiscoverCard } from "../components/DiscoverCard";
 import { Icon } from "../lib/icons";
 import * as api from "../lib/api";
 import type { UserSearchResult } from "../lib/types";
@@ -104,8 +105,10 @@ export function Explore() {
             ))}
           </div>
 
+          <DiscoverCard />
+
           <div className="empty-state" style={{ fontSize: 12 }}>
-            Routes, segments, challenges and clubs are coming in a later release.
+            Segments, challenges and clubs are coming in a later release.
           </div>
         </>
       ) : view === "map" ? (

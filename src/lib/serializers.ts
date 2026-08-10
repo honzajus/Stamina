@@ -1,4 +1,4 @@
-import { Activity, Comment, GpsPoint, Stamina, User } from "@prisma/client";
+import { Activity, Comment, GpsPoint, Notification, Stamina, User } from "@prisma/client";
 import { iconUrl, SPORT_ICON } from "./icons";
 
 export function serializeUser(user: User) {
@@ -13,6 +13,11 @@ export function serializeUser(user: User) {
     locationLng: user.locationLng,
     sports: JSON.parse(user.sports) as string[],
     visibility: user.visibility,
+    heightCm: user.heightCm,
+    weightKg: user.weightKg,
+    birthYear: user.birthYear,
+    gender: user.gender,
+    weeklyGoalMeters: user.weeklyGoalMeters,
     createdAt: user.createdAt,
   };
 }
@@ -51,6 +56,7 @@ export function serializeActivity(
     pace: activity.pace,
     avgSpeed: activity.avgSpeed,
     elevationGain: activity.elevationGain,
+    stepCount: activity.stepCount,
     user: activity.user ? serializeUserSummary(activity.user) : undefined,
     map: activity.points
       ? {
@@ -67,6 +73,18 @@ export function serializeActivity(
     viewerHasGivenStamina: activity.viewerHasGivenStamina ?? false,
     staminaIcon: { key: "stamina", url: iconUrl("stamina") },
     createdAt: activity.createdAt,
+  };
+}
+
+export function serializeNotification(notification: Notification & { actor?: User }, activityTitle: string | null = null) {
+  return {
+    id: notification.id,
+    type: notification.type,
+    read: notification.read,
+    createdAt: notification.createdAt,
+    actor: notification.actor ? serializeUserSummary(notification.actor) : undefined,
+    activityId: notification.activityId,
+    activityTitle,
   };
 }
 

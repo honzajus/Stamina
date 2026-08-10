@@ -33,6 +33,17 @@
   border-color: var(--glass-border) !important;
 }
 
+/*
+ * The tile source only ships one fully-detailed raster style (buildings,
+ * roads, land use) and no separate dark version of it, so dark mode reuses
+ * the same tiles and recolors just the tile layer (not markers/popups,
+ * which live in their own panes) to a dark palette instead of losing detail
+ * to a sparser "dark" tile style.
+ */
+.map-view.is-dark .leaflet-tile-pane {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
 .map-pin-icon,
 .map-dot-icon,
 .map-avatar-icon {

@@ -14,6 +14,8 @@ usersRouter.patch("/me", requireAuth, validateBody(updateProfileSchema), asyncHa
 usersRouter.get("/me/stats", requireAuth, validateQuery(statsRangeSchema), asyncHandler(usersController.myStats));
 usersRouter.get("/me/progress", requireAuth, validateQuery(statsRangeSchema), asyncHandler(usersController.myProgress));
 usersRouter.get("/me/friends", requireAuth, asyncHandler(usersController.listFriends));
+usersRouter.get("/me/discover", requireAuth, asyncHandler(usersController.discover));
+usersRouter.get("/me/records", requireAuth, asyncHandler(usersController.myRecords));
 
 usersRouter.get("/:id", attachAuthIfPresent, asyncHandler(usersController.getUserProfile));
 usersRouter.get("/:id/followers", asyncHandler(usersController.listFollowers));

@@ -1,24 +1,17 @@
 import { useNavigate } from "react-router-dom";
-import { Icon } from "../../lib/icons";
 
 export function Welcome() {
   const navigate = useNavigate();
 
   return (
     <div className="screen screen--centered">
-      <div
-        style={{
-          width: 96,
-          height: 96,
-          borderRadius: 28,
-          background: "var(--color-primary)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Icon name="stamina" size={48} style={{ color: "#FFFFFF" }} />
-      </div>
+      <img
+        src="/stamina-mark.png"
+        alt="Stamina"
+        width={96}
+        height={96}
+        style={{ borderRadius: 28, objectFit: "cover" }}
+      />
 
       <div>
         <div className="wordmark" style={{ fontSize: 32 }}>

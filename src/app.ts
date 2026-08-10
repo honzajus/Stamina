@@ -9,6 +9,7 @@ import { activitiesRouter } from "./modules/activities/activities.routes";
 import { feedRouter } from "./modules/feed/feed.routes";
 import { commentsRouter } from "./modules/social/social.routes";
 import { iconsRouter } from "./modules/icons/icons.routes";
+import { notificationsRouter } from "./modules/notifications/notifications.routes";
 import { errorHandler, notFoundHandler } from "./middleware/error";
 
 export function createApp() {
@@ -29,6 +30,7 @@ export function createApp() {
   app.use("/api/activities", activitiesRouter);
   app.use("/api/feed", feedRouter);
   app.use("/api/comments", commentsRouter);
+  app.use("/api/notifications", notificationsRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

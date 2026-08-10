@@ -1,6 +1,7 @@
-export type Sport = "RUNNING" | "CYCLING" | "WALKING" | "HIKING" | "SWIMMING" | "TRAINING";
+export type Sport = "RUNNING" | "CYCLING" | "WALKING" | "HIKING" | "SWIMMING" | "TRAINING" | "DRIVING";
 export type Visibility = "EVERYONE" | "FOLLOWERS" | "ONLY_ME";
 export type ActivityStatus = "ACTIVE" | "PAUSED" | "FINISHED";
+export type Gender = "MALE" | "FEMALE" | "OTHER" | "PREFER_NOT_TO_SAY";
 
 export interface IconRef {
   key: string;
@@ -18,7 +19,20 @@ export interface User {
   locationLng: number | null;
   sports: Sport[];
   visibility: Visibility;
+  heightCm: number | null;
+  weightKg: number | null;
+  birthYear: number | null;
+  gender: Gender | null;
+  weeklyGoalMeters: number | null;
   createdAt: string;
+}
+
+export interface UserRecords {
+  longestDistanceMeters: number;
+  longestDurationSeconds: number;
+  bestRunPaceSecondsPerKm: number | null;
+  currentStreakDays: number;
+  longestStreakDays: number;
 }
 
 export interface UserSummary {
@@ -60,6 +74,7 @@ export interface Activity {
   pace: number | null;
   avgSpeed: number | null;
   elevationGain: number;
+  stepCount: number | null;
   user?: UserSummary;
   map?: { points: MapPoint[] };
   staminaCount: number;
@@ -96,4 +111,22 @@ export interface ProgressResponse {
   current: PeriodStats;
   previous: PeriodStats;
   distanceChangePercent: number | null;
+}
+
+export interface DiscoverSuggestion {
+  latitude: number;
+  longitude: number;
+  popularity: number;
+}
+
+export type NotificationType = "FOLLOW" | "STAMINA" | "COMMENT";
+
+export interface AppNotification {
+  id: string;
+  type: NotificationType;
+  read: boolean;
+  createdAt: string;
+  actor?: UserSummary;
+  activityId: string | null;
+  activityTitle: string | null;
 }

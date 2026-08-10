@@ -1,7 +1,7 @@
 import { Activity } from "@prisma/client";
 import { prisma } from "../../lib/prisma";
 import { ApiError } from "../../lib/errors";
-import { computeActivityStats, filterGpsNoise } from "../../lib/geo";
+import { computeActivityStats, estimateStepCount, filterGpsNoise } from "../../lib/geo";
 
 /** Returns whether `viewerId` is allowed to see `activity`, honoring its privacy setting. */
 export async function canViewActivity(activity: Activity, viewerId?: string): Promise<boolean> {
@@ -32,10 +32,10 @@ export async function getOwnedActiveActivity(activityId: string, userId: string)
 }
 
 export async function recomputeAndFinish(activityId: string) {
-  const points = await prisma.gpsPoint.findMany({
-    where: { activityId },
-    orderBy: { sequence: "asc" },
-  });
+  const [activity, points] = await Promise.all([
+    prisma.activity.findUniqueOrThrow({ where: { id: activityId }, include: { user: true } }),
+    prisma.gpsPoint.findMany({ where: { activityId }, orderBy: { sequence: "asc" } }),
+  ]);
 
   const clean = filterGpsNoise(
     points.map((p) => ({
@@ -47,6 +47,7 @@ export async function recomputeAndFinish(activityId: string) {
   );
 
   const stats = computeActivityStats(clean);
+  const stepCount = estimateStepCount(stats.distanceMeters, activity.user.heightCm, activity.sport);
 
   return prisma.activity.update({
     where: { id: activityId },
@@ -58,6 +59,7 @@ export async function recomputeAndFinish(activityId: string) {
       pace: stats.paceSecondsPerKm,
       avgSpeed: stats.avgSpeedMs,
       elevationGain: stats.elevationGainMeters,
+      stepCount,
     },
   });
 }

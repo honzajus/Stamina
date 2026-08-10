@@ -24,6 +24,7 @@ export const ICONS = {
   hiking: "hiking",
   swimming: "swimming",
   training: "training",
+  driving: "driving",
 } as const;
 
 export type IconKey = keyof typeof ICONS;
@@ -47,6 +48,7 @@ export const ICON_LABELS: Record<IconKey, string> = {
   hiking: "Hiking",
   swimming: "Swimming",
   training: "Training",
+  driving: "Driving",
 };
 
 export const SPORT_ICON: Record<string, IconKey> = {
@@ -56,6 +58,7 @@ export const SPORT_ICON: Record<string, IconKey> = {
   HIKING: "hiking",
   SWIMMING: "swimming",
   TRAINING: "training",
+  DRIVING: "driving",
 };
 
 export function iconUrl(key: IconKey): string {

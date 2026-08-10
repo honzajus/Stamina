@@ -22,7 +22,7 @@ export function SportSelect() {
         await api.updateMyProfile({ sports: selected });
         await refreshUser();
       }
-      navigate("/onboarding/location");
+      navigate("/onboarding/body");
     } finally {
       setSaving(false);
     }
@@ -31,7 +31,7 @@ export function SportSelect() {
   return (
     <div className="screen">
       <div style={{ marginTop: 24 }}>
-        <div className="section-title">Step 1 of 2</div>
+        <div className="section-title">Step 1 of 3</div>
         <h1 style={{ fontSize: 24, fontWeight: 800, marginTop: 8 }}>What do you do?</h1>
         <p style={{ color: "var(--color-text-secondary)", marginTop: 4 }}>Pick as many as you like.</p>
       </div>

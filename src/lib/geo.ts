@@ -108,3 +108,27 @@ export function computeActivityStats(points: RawGpsPoint[]): ActivityStats {
 
   return { distanceMeters, durationSeconds, paceSecondsPerKm, avgSpeedMs, elevationGainMeters };
 }
+
+// Standard anthropometric stride-length approximations (stride ~= height x
+// a sport-dependent factor). Only sports where "steps" is a meaningful unit
+// get a factor; the rest (cycling, swimming, driving, ...) return null.
+const STEP_LENGTH_FACTOR: Record<string, number> = {
+  WALKING: 0.414,
+  HIKING: 0.414,
+  RUNNING: 0.45,
+};
+
+/** Estimated stride length in meters for a given sport and height, or null if steps don't apply to that sport. */
+export function estimateStepLengthMeters(heightCm: number, sport: string): number | null {
+  const factor = STEP_LENGTH_FACTOR[sport];
+  if (!factor || heightCm <= 0) return null;
+  return (heightCm / 100) * factor;
+}
+
+/** Estimated step count for an activity, or null if the sport has no step concept or the user has no height on file. */
+export function estimateStepCount(distanceMeters: number, heightCm: number | null | undefined, sport: string): number | null {
+  if (!heightCm) return null;
+  const stepLength = estimateStepLengthMeters(heightCm, sport);
+  if (!stepLength) return null;
+  return Math.round(distanceMeters / stepLength);
+}

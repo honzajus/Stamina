@@ -20,7 +20,7 @@ export function LocationPermission() {
 
   return (
     <div className="screen screen--centered">
-      <div className="section-title">Step 2 of 2</div>
+      <div className="section-title">Step 3 of 3</div>
 
       <div
         style={{

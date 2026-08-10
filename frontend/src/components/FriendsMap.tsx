@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Marker, Popup } from "react-leaflet";
 import { MapView } from "./MapView";
@@ -26,14 +26,29 @@ export function FriendsMap() {
     };
   }, []);
 
+  const located = useMemo(
+    () =>
+      (friends ?? []).filter(
+        (f): f is Friend & { locationLat: number; locationLng: number } =>
+          f.locationLat !== null && f.locationLng !== null
+      ),
+    [friends]
+  );
+  const hasSelf = Boolean(user && user.locationLat !== null && user.locationLng !== null);
+  // Icons only need rebuilding when the underlying data they're drawn from
+  // changes, not on every re-render of this component.
+  const selfIcon = useMemo(
+    () => (hasSelf ? avatarPinIcon(user!.name, user!.avatarUrl, { self: true }) : null),
+    [hasSelf, user?.name, user?.avatarUrl]
+  );
+  const friendIcons = useMemo(
+    () => new Map(located.map((f) => [f.id, avatarPinIcon(f.name, f.avatarUrl)])),
+    [located]
+  );
+
   if (!friends) {
     return <div className="loading-dots">Loading map…</div>;
   }
-
-  const located = friends.filter(
-    (f): f is Friend & { locationLat: number; locationLng: number } => f.locationLat !== null && f.locationLng !== null
-  );
-  const hasSelf = Boolean(user && user.locationLat !== null && user.locationLng !== null);
 
   if (located.length === 0 && !hasSelf) {
     return (
@@ -54,7 +69,7 @@ export function FriendsMap() {
       {hasSelf && (
         <Marker
           position={[user!.locationLat as number, user!.locationLng as number]}
-          icon={avatarPinIcon(user!.name, user!.avatarUrl, { self: true })}
+          icon={selfIcon!}
         >
           <Popup>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -68,7 +83,7 @@ export function FriendsMap() {
         </Marker>
       )}
       {located.map((friend) => (
-        <Marker key={friend.id} position={[friend.locationLat, friend.locationLng]} icon={avatarPinIcon(friend.name, friend.avatarUrl)}>
+        <Marker key={friend.id} position={[friend.locationLat, friend.locationLng]} icon={friendIcons.get(friend.id)!}>
           <Popup>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <Avatar name={friend.name} avatarUrl={friend.avatarUrl} size={32} />

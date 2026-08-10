@@ -3,7 +3,8 @@ import { prisma } from "../../lib/prisma";
 import { ApiError } from "../../lib/errors";
 import { serializeUser, serializeUserSummary } from "../../lib/serializers";
 import { uploadAvatarIfDataUrl } from "../../lib/supabaseStorage";
-import { getUserProgress, getUserStats, StatsRange } from "./users.service";
+import { getDiscoverSuggestions, getUserProgress, getUserRecords, getUserStats, StatsRange } from "./users.service";
+import { createNotification } from "../notifications/notifications.service";
 
 export async function searchUsers(req: Request, res: Response) {
   const query = ((req.query.search as string) ?? "").trim();
@@ -71,6 +72,11 @@ export async function updateMyProfile(req: Request, res: Response) {
     locationLng: number;
     sports: string[];
     visibility: "EVERYONE" | "FOLLOWERS" | "ONLY_ME";
+    heightCm: number;
+    weightKg: number;
+    birthYear: number;
+    gender: "MALE" | "FEMALE" | "OTHER" | "PREFER_NOT_TO_SAY";
+    weeklyGoalMeters: number;
   }>;
 
   const user = await prisma.user.update({
@@ -94,11 +100,20 @@ export async function followUser(req: Request, res: Response) {
   const target = await prisma.user.findUnique({ where: { id: targetId } });
   if (!target) throw ApiError.notFound("User not found");
 
+  const alreadyFollowing = await prisma.follow.findUnique({
+    where: { followerId_followingId: { followerId: req.userId!, followingId: targetId } },
+  });
+
   await prisma.follow.upsert({
     where: { followerId_followingId: { followerId: req.userId!, followingId: targetId } },
     create: { followerId: req.userId!, followingId: targetId },
     update: {},
   });
+
+  // Only notify on the first follow — a repeat call (e.g. a double tap) is a no-op, not a new event.
+  if (!alreadyFollowing) {
+    await createNotification({ recipientId: targetId, actorId: req.userId!, type: "FOLLOW" });
+  }
 
   res.status(201).json({ following: true });
 }
@@ -172,4 +187,14 @@ export async function myProgress(req: Request, res: Response) {
   const range = req.query.range as StatsRange;
   const progress = await getUserProgress(req.userId!, range);
   res.json(progress);
+}
+
+export async function discover(req: Request, res: Response) {
+  const suggestions = await getDiscoverSuggestions(req.userId!);
+  res.json({ suggestions });
+}
+
+export async function myRecords(req: Request, res: Response) {
+  const records = await getUserRecords(req.userId!);
+  res.json({ records });
 }

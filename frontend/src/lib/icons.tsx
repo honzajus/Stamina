@@ -26,6 +26,7 @@ export type IconName =
   | "hiking"
   | "swimming"
   | "training"
+  | "driving"
   | "chevronLeft"
   | "chevronRight"
   | "close"
@@ -162,6 +163,15 @@ const PATHS: Record<IconName, JSX.Element> = {
       <path d="M8 12h8" />
     </>
   ),
+  driving: (
+    <>
+      <path d="M4 16.5v-3l2-4.5h8l2 4.5v3" />
+      <path d="M4 13.5h12" />
+      <path d="M7 9V7.5h6V9" />
+      <circle cx="7.5" cy="16.5" r="1.8" />
+      <circle cx="15.5" cy="16.5" r="1.8" />
+    </>
+  ),
   chevronLeft: <path d="M15 5 8 12l7 7" />,
   chevronRight: <path d="M9 5l7 7-7 7" />,
   close: <path d="M6 6l12 12M18 6 6 18" />,
@@ -261,6 +271,7 @@ const SPORT_ICON: Record<string, IconName> = {
   HIKING: "hiking",
   SWIMMING: "swimming",
   TRAINING: "training",
+  DRIVING: "driving",
 };
 
 export function sportIconName(sport: string): IconName {
@@ -274,6 +285,7 @@ export const SPORT_LABEL: Record<string, string> = {
   HIKING: "Hiking",
   SWIMMING: "Swimming",
   TRAINING: "Training",
+  DRIVING: "Fatass Drive",
 };
 
-export const SPORTS: string[] = ["RUNNING", "CYCLING", "WALKING", "HIKING", "SWIMMING", "TRAINING"];
+export const SPORTS: string[] = ["RUNNING", "CYCLING", "WALKING", "HIKING", "SWIMMING", "TRAINING", "DRIVING"];

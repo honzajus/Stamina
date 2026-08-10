@@ -98,6 +98,35 @@ export function Progress() {
             sub={`${progress.current.activities} ${progress.current.activities === 1 ? "activity" : "activities"}`}
           />
 
+          {range === "week" && user?.weeklyGoalMeters && (
+            <div className="card">
+              <div className="card-label" style={{ marginBottom: 8 }}>
+                Weekly goal
+              </div>
+              <div
+                style={{
+                  height: 10,
+                  borderRadius: 999,
+                  background: "var(--color-primary-light)",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    height: "100%",
+                    width: `${Math.min(100, (progress.current.distance / user.weeklyGoalMeters) * 100)}%`,
+                    background: "var(--color-brand)",
+                    borderRadius: 999,
+                  }}
+                />
+              </div>
+              <div className="stat-sub" style={{ marginTop: 8 }}>
+                {formatDistanceKm(progress.current.distance)} / {formatDistanceKm(user.weeklyGoalMeters)} km
+                {progress.current.distance >= user.weeklyGoalMeters ? " — goal reached!" : ""}
+              </div>
+            </div>
+          )}
+
           {chartData && (
             <div className="card">
               <div className="card-label" style={{ marginBottom: 8 }}>

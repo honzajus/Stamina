@@ -2,8 +2,11 @@ import { ReactNode, useEffect } from "react";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import type { LatLngBoundsExpression, LatLngExpression } from "leaflet";
 import { useTheme } from "../lib/theme";
-import "leaflet/dist/leaflet.css";
-import "./map-view.css";
+// This component's CSS (leaflet's own + map-view.css) is imported eagerly
+// from main.tsx instead of here — see the comment there. MapView itself
+// only ever loads inside a lazy-loaded route, so an import here would ship
+// inside that same lazy chunk and could still lose the race against first
+// render.
 
 interface MapViewProps {
   center: LatLngExpression;
@@ -13,8 +16,14 @@ interface MapViewProps {
   children?: ReactNode;
 }
 
-const LIGHT_TILES = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
-const DARK_TILES = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+// Carto's dark tile style ("dark_all") is a deliberately minimal basemap —
+// no building footprints, faint unlabeled roads — a different, less
+// detailed style than the light "voyager" tiles rather than a dark version
+// of the same map. To keep buildings/roads visible in dark mode, the same
+// fully-detailed voyager tiles are used in both themes and recolored with a
+// CSS filter (see .map-view.is-dark in map-view.css) instead of switching
+// to a sparser tile source.
+const TILE_URL = "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
 const ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
 /**
@@ -44,17 +53,16 @@ function FitBounds({ bounds }: { bounds?: LatLngBoundsExpression }) {
 
 export function MapView({ center, zoom = 14, bounds, height = 220, children }: MapViewProps) {
   const { effectiveTheme } = useTheme();
-  const tileUrl = effectiveTheme === "dark" ? DARK_TILES : LIGHT_TILES;
 
   return (
-    <div className="map-view" style={{ height }}>
+    <div className={`map-view ${effectiveTheme === "dark" ? "is-dark" : ""}`} style={{ height }}>
       <MapContainer
         center={center}
         zoom={zoom}
         style={{ height: "100%", width: "100%" }}
         scrollWheelZoom
       >
-        <TileLayer url={tileUrl} attribution={ATTRIBUTION} maxZoom={19} />
+        <TileLayer url={TILE_URL} attribution={ATTRIBUTION} maxZoom={19} />
         <FitBounds bounds={bounds} />
         {children}
       </MapContainer>

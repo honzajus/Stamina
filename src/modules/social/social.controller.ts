@@ -3,6 +3,7 @@ import { prisma } from "../../lib/prisma";
 import { ApiError } from "../../lib/errors";
 import { serializeComment, serializeStamina } from "../../lib/serializers";
 import { canViewActivity } from "../activities/activities.service";
+import { createNotification } from "../notifications/notifications.service";
 
 async function findVisibleActivity(activityId: string, viewerId?: string) {
   const activity = await prisma.activity.findUnique({ where: { id: activityId } });
@@ -17,11 +18,25 @@ async function findVisibleActivity(activityId: string, viewerId?: string) {
 export async function giveStamina(req: Request, res: Response) {
   const activity = await findVisibleActivity(req.params.id, req.userId);
 
+  const alreadyGiven = await prisma.stamina.findUnique({
+    where: { userId_activityId: { userId: req.userId!, activityId: activity.id } },
+  });
+
   const stamina = await prisma.stamina.upsert({
     where: { userId_activityId: { userId: req.userId!, activityId: activity.id } },
     create: { userId: req.userId!, activityId: activity.id },
     update: {},
   });
+
+  // Only notify the first time — withdrawing and re-giving isn't a new event worth re-notifying.
+  if (!alreadyGiven) {
+    await createNotification({
+      recipientId: activity.userId,
+      actorId: req.userId!,
+      type: "STAMINA",
+      activityId: activity.id,
+    });
+  }
 
   res.status(201).json({ stamina: serializeStamina(stamina) });
 }
@@ -55,6 +70,13 @@ export async function createComment(req: Request, res: Response) {
   const comment = await prisma.comment.create({
     data: { text, userId: req.userId!, activityId: activity.id },
     include: { user: true },
+  });
+
+  await createNotification({
+    recipientId: activity.userId,
+    actorId: req.userId!,
+    type: "COMMENT",
+    activityId: activity.id,
   });
 
   res.status(201).json({ comment: serializeComment(comment) });

@@ -138,11 +138,19 @@ export function ActivityDetail() {
           </div>
           <div className="activity-stat-label">Elevation</div>
         </div>
+        {activity.stepCount != null && (
+          <div className="card">
+            <div className="activity-stat-value" style={{ fontSize: 22 }}>
+              {activity.stepCount.toLocaleString()}
+            </div>
+            <div className="activity-stat-label">Steps</div>
+          </div>
+        )}
       </div>
 
       {activity.map && (
         <div className="activity-card-map" style={{ margin: 0 }}>
-          <RouteMap points={activity.map.points} height={480} />
+          <RouteMap points={activity.map.points} height={560} />
         </div>
       )}
 

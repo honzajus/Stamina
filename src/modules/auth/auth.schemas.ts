@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const SPORTS = ["RUNNING", "CYCLING", "WALKING", "HIKING", "SWIMMING", "TRAINING"] as const;
+export const SPORTS = ["RUNNING", "CYCLING", "WALKING", "HIKING", "SWIMMING", "TRAINING", "DRIVING"] as const;
 
 export const registerSchema = z.object({
   email: z.string().email(),

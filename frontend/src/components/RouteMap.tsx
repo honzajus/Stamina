@@ -11,6 +11,12 @@ interface RouteMapProps {
 const BRAND_GREEN = "#16a34a";
 const NEUTRAL_MARKER = "#111814";
 
+// Built once at module load rather than per render/instance — the colors
+// never change, so there's no reason to rebuild these divIcons every time
+// a RouteMap re-renders (e.g. on every comment posted on the activity).
+const START_ICON = dotIcon(NEUTRAL_MARKER);
+const END_ICON = pinIcon(BRAND_GREEN);
+
 /**
  * Real, pannable/zoomable map (Leaflet + free OpenStreetMap/CARTO tiles, no
  * API key). The route itself is the only thing on this map drawn in Stamina
@@ -45,8 +51,8 @@ export function RouteMap({ points, height = 320 }: RouteMapProps) {
   return (
     <MapView center={end} bounds={path} height={height}>
       <Polyline positions={path} pathOptions={{ color: BRAND_GREEN, weight: 4, lineCap: "round", lineJoin: "round" }} />
-      <Marker position={start} icon={dotIcon(NEUTRAL_MARKER)} />
-      <Marker position={end} icon={pinIcon(BRAND_GREEN)} />
+      <Marker position={start} icon={START_ICON} />
+      <Marker position={end} icon={END_ICON} />
     </MapView>
   );
 }

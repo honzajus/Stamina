@@ -5,6 +5,7 @@ const SPORT_ACTIVITY_NOUN: Record<string, string> = {
   HIKING: "Hike",
   SWIMMING: "Swim",
   TRAINING: "Training",
+  DRIVING: "Drive",
 };
 
 /** Mirrors the product spec's "Morning Run" / "Evening Ride" style default titles. */

@@ -1,6 +1,8 @@
 import type {
   Activity,
+  AppNotification,
   Comment,
+  DiscoverSuggestion,
   Friend,
   IconRef,
   ProgressResponse,
@@ -9,6 +11,7 @@ import type {
   StaminaEntry,
   StatsRange,
   User,
+  UserRecords,
   UserSearchResult,
   UserSummary,
   Visibility,
@@ -77,6 +80,14 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   return promise;
 }
 
+// The API's free-tier host can take 30-50s to wake from sleep (see README).
+// The timeout has to sit comfortably above that worst case, or a cold start
+// gets misclassified as "offline" — which is worse than the original
+// problem (a request that hangs with zero feedback): a real timeout should
+// only fire for a connection that's actually dead, not one that's just slow
+// to wake up.
+const REQUEST_TIMEOUT_MS = 60_000;
+
 async function doFetch<T>(path: string, options: RequestInit): Promise<T> {
   const token = getToken();
   const headers: Record<string, string> = {
@@ -85,7 +96,20 @@ async function doFetch<T>(path: string, options: RequestInit): Promise<T> {
     ...(options.headers as Record<string, string>),
   };
 
-  const res = await fetch(`${API_URL}${path}`, { ...options, headers });
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${path}`, { ...options, headers, signal: controller.signal });
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new ApiError(0, "Request timed out. Check your connection and try again.");
+    }
+    throw new ApiError(0, "Network error. Check your connection and try again.");
+  } finally {
+    window.clearTimeout(timeout);
+  }
 
   if (res.status === 204) return undefined as T;
 
@@ -134,7 +158,22 @@ export function getUserProfile(id: string) {
 
 export function updateMyProfile(
   data: Partial<
-    Pick<User, "name" | "bio" | "avatarUrl" | "location" | "locationLat" | "locationLng" | "sports" | "visibility">
+    Pick<
+      User,
+      | "name"
+      | "bio"
+      | "avatarUrl"
+      | "location"
+      | "locationLat"
+      | "locationLng"
+      | "sports"
+      | "visibility"
+      | "heightCm"
+      | "weightKg"
+      | "birthYear"
+      | "gender"
+      | "weeklyGoalMeters"
+    >
   >
 ) {
   return request<{ user: User }>("/api/users/me", { method: "PATCH", body: JSON.stringify(data) });
@@ -158,6 +197,14 @@ export function listFollowing(id: string) {
 
 export function getFriends() {
   return request<{ users: Friend[] }>("/api/users/me/friends");
+}
+
+export function getDiscoverSuggestions() {
+  return request<{ suggestions: DiscoverSuggestion[] }>("/api/users/me/discover");
+}
+
+export function getMyRecords() {
+  return request<{ records: UserRecords }>("/api/users/me/records");
 }
 
 export function listUserActivities(id: string, limit = 20) {
@@ -254,6 +301,21 @@ export function listComments(activityId: string) {
 
 export function deleteComment(commentId: string) {
   return request<void>(`/api/comments/${commentId}`, { method: "DELETE" });
+}
+
+// ---- Notifications ----
+
+export function getNotifications(cursor?: string) {
+  const qs = cursor ? `?cursor=${encodeURIComponent(cursor)}` : "";
+  return request<{ notifications: AppNotification[]; nextCursor: string | null }>(`/api/notifications${qs}`);
+}
+
+export function getUnreadNotificationCount() {
+  return request<{ count: number }>("/api/notifications/unread-count");
+}
+
+export function markNotificationsRead() {
+  return request<void>("/api/notifications/read", { method: "POST" });
 }
 
 // ---- Icons ----

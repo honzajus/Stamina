@@ -9,7 +9,14 @@ import * as api from "../lib/api";
 import { pickAvatarPhoto } from "../lib/avatar";
 import { getCurrentLocation } from "../lib/nativeLocation";
 import { reverseGeocode } from "../lib/geocode";
-import type { Sport } from "../lib/types";
+import type { Gender, Sport } from "../lib/types";
+
+const GENDER_OPTIONS: { value: Gender; label: string }[] = [
+  { value: "FEMALE", label: "Female" },
+  { value: "MALE", label: "Male" },
+  { value: "OTHER", label: "Other" },
+  { value: "PREFER_NOT_TO_SAY", label: "Prefer not to say" },
+];
 
 export function EditProfile() {
   const { user, refreshUser } = useAuth();
@@ -21,6 +28,13 @@ export function EditProfile() {
   const [locationLat, setLocationLat] = useState<number | null>(user?.locationLat ?? null);
   const [locationLng, setLocationLng] = useState<number | null>(user?.locationLng ?? null);
   const [sports, setSports] = useState<Sport[]>((user?.sports as Sport[]) ?? []);
+  const [heightCm, setHeightCm] = useState(user?.heightCm != null ? String(user.heightCm) : "");
+  const [weightKg, setWeightKg] = useState(user?.weightKg != null ? String(user.weightKg) : "");
+  const [birthYear, setBirthYear] = useState(user?.birthYear != null ? String(user.birthYear) : "");
+  const [gender, setGender] = useState<Gender | null>(user?.gender ?? null);
+  const [weeklyGoalKm, setWeeklyGoalKm] = useState(
+    user?.weeklyGoalMeters != null ? String(user.weeklyGoalMeters / 1000) : ""
+  );
   const [saving, setSaving] = useState(false);
   const [pickingPhoto, setPickingPhoto] = useState(false);
   const [locating, setLocating] = useState(false);
@@ -69,6 +83,11 @@ export function EditProfile() {
         locationLat: locationLat ?? undefined,
         locationLng: locationLng ?? undefined,
         sports,
+        heightCm: heightCm ? Number(heightCm) : undefined,
+        weightKg: weightKg ? Number(weightKg) : undefined,
+        birthYear: birthYear ? Number(birthYear) : undefined,
+        gender: gender ?? undefined,
+        weeklyGoalMeters: weeklyGoalKm ? Number(weeklyGoalKm) * 1000 : undefined,
       });
       await refreshUser();
       navigate("/you", { replace: true });
@@ -136,6 +155,90 @@ export function EditProfile() {
                 {SPORT_LABEL[s]}
               </button>
             ))}
+          </div>
+        </div>
+
+        <div className="field">
+          <label htmlFor="weeklyGoalKm">Weekly distance goal (km)</label>
+          <input
+            id="weeklyGoalKm"
+            type="number"
+            inputMode="decimal"
+            min={0}
+            step={0.1}
+            value={weeklyGoalKm}
+            onChange={(e) => setWeeklyGoalKm(e.target.value)}
+            placeholder="e.g. 20"
+          />
+        </div>
+
+        <div>
+          <div className="section-title" style={{ marginBottom: 8 }}>
+            Body basics
+          </div>
+          <p style={{ color: "var(--color-text-secondary)", fontSize: 12, marginBottom: 12 }}>
+            Used to estimate things like your step count. Optional.
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            <div className="field">
+              <label htmlFor="heightCm">Height (cm)</label>
+              <input
+                id="heightCm"
+                type="number"
+                inputMode="numeric"
+                min={50}
+                max={272}
+                value={heightCm}
+                onChange={(e) => setHeightCm(e.target.value)}
+                placeholder="175"
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="weightKg">Weight (kg)</label>
+              <input
+                id="weightKg"
+                type="number"
+                inputMode="numeric"
+                min={20}
+                max={400}
+                value={weightKg}
+                onChange={(e) => setWeightKg(e.target.value)}
+                placeholder="70"
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="birthYear">Birth year</label>
+              <input
+                id="birthYear"
+                type="number"
+                inputMode="numeric"
+                min={1900}
+                max={new Date().getFullYear()}
+                value={birthYear}
+                onChange={(e) => setBirthYear(e.target.value)}
+                placeholder="1995"
+              />
+            </div>
+            <div>
+              <div className="section-title" style={{ marginBottom: 8 }}>
+                Gender
+              </div>
+              <div className="option-list">
+                {GENDER_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    className={`option-row ${gender === option.value ? "is-selected" : ""}`}
+                    onClick={() => setGender(option.value)}
+                  >
+                    <span className="radio-dot">{gender === option.value && <span className="radio-dot-fill" />}</span>
+                    <span className="option-row-text">
+                      <strong>{option.label}</strong>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
